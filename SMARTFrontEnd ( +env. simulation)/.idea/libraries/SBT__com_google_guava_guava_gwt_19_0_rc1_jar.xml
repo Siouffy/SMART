@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: com.google.guava:guava-gwt:19.0-rc1:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.google.guava/guava-gwt/jars/guava-gwt-19.0-rc1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.google.guava/guava-gwt/docs/guava-gwt-19.0-rc1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.google.guava/guava-gwt/srcs/guava-gwt-19.0-rc1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

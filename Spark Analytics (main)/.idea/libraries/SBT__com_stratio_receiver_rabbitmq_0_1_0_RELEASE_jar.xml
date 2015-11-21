@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: com.stratio.receiver:rabbitmq:0.1.0-RELEASE:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.stratio.receiver/rabbitmq/jars/rabbitmq-0.1.0-RELEASE.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.stratio.receiver/rabbitmq/docs/rabbitmq-0.1.0-RELEASE-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.stratio.receiver/rabbitmq/srcs/rabbitmq-0.1.0-RELEASE-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

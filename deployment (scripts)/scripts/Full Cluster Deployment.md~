@@ -1,0 +1,42 @@
+weave launch
+weave expose 10.0.0.1/24
+
+###single-zookeeper, multiple-broker(2x) [KAFKA CLUSTER]
+1. weave run 10.0.0.11/24 -p 2181:2181 wurstmeister/zookeeper
+2. weave run 10.0.0.12/24 -p 9092:9092 -e KAFKA_ADVERTISED_HOST_NAME="10.0.0.12" -e KAFKA_ZOOKEEPER_CONNECT="10.0.0.11:2181" -e KAFKA_BROKER_ID=2 -e KAFKA_AUTO_CREATE_TOPICS_ENABLE="false" -v /var/run/docker.sock:/var/run/docker.sock  wurstmeister/kafka:0.8.2.0
+3. weave run 10.0.0.13/24 -p 9092:9092 -e KAFKA_ADVERTISED_HOST_NAME="10.0.0.13" -e KAFKA_ZOOKEEPER_CONNECT="10.0.0.11:2181" -e KAFKA_BROKER_ID=3 -e KAFKA_AUTO_CREATE_TOPICS_ENABLE="false" -p 9093:9092 -v /var/run/docker.sock:/var/run/docker.sock  wurstmeister/kafka:0.8.2.0
+
+####verification:- create a replicated topic and call describe
+1. Assuming we have access to kafka bin
+2. bin/kafka-topics.sh --create --zookeeper 10.0.0.11:2181 --replication-factor 2 --partitions 2 --topic my-replicated-topic
+3. bin/kafka-topics.sh --describe --zookeeper 10.0.0.11:2181 --topic my-replicated-topic
+
+###single node RabbitMQ
+weave run 10.0.0.21/24 -p 5672:5672 rabbitmq:3.5.3
+
+###multiple-node(3x) [CASSANDRA CLUSTER]
+1. weave run 10.0.0.31/24 -p 9042:9042 -e IP=10.0.0.31 -e SEEDS=10.0.0.31,10.0.0.32 rugdsdev/env:cassandra-2.1.5-1-latest
+2. weave run 10.0.0.32/24 -p 9043:9042 -e IP=10.0.0.32 -e SEEDS=10.0.0.31,10.0.0.32 rugdsdev/env:cassandra-2.1.5-1-latest
+3. weave run 10.0.0.33/24 -p 9044:9042 -p 7199:7199 -e IP=10.0.0.33 -e SEEDS=10.0.0.31,10.0.0.32 -e JMX_PASSWORD=123456 rugdsdev/env:cassandra-2.1.5-1-latest
+*. original documentation:- https://github.com/rug-ds-lab/deploy/wiki/cassandra
+
+####verification:- using node tool to check the cluster status [note only possible on node 10.0.0.13 with defined JMX_PASSWORD]
+1. Assuming we have access to cassandra bin
+2. bin/nodetool -h 10.0.0.33 -p 7199 -u cassandra -pw 123456 status
+
+###single node lightning server
+weave run 10.0.0.41/24 -p 3000:3000 deardooley/lightning-viz
+
+
+###standalone spark cluster [single master] [2x workers]
+1. weave run 10.0.0.51/24 -t -e SPARK_LOCAL_IP=10.0.0.51 rugdsdev/spark /start-master.sh
+2. weave run 10.0.0.52/24 -t -e SPARK_LOCAL_IP=10.0.0.52 -e SPARK_MASTER_IP=10.0.0.51 rugdsdev/spark /start-worker.sh
+3. weave run 10.0.0.53/24 -t -e SPARK_LOCAL_IP=10.0.0.53 -e SPARK_MASTER_IP=10.0.0.51 rugdsdev/spark /start-worker.sh
+
+####verification [spark-ui]
+http://10.0.0.51:8080
+
+####verification [Spark-shell]
+1. weave run 10.0.0.60/24 -t -e SPARK_LOCAL_IP=10.0.0.60 rugds-dev/spark
+2. docker exec -it 'shell-container-name' bash
+3. ./usr/local/spark/bin/spark-shell --master spark://10.0.0.51:7077 -i 10.0.0.60

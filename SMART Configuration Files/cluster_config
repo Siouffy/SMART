@@ -1,0 +1,143 @@
+{
+  "appName" : "SMART Room Analyzer",
+  "masterURL" : "spark://10.0.0.51:7077",
+  "debug" : true,
+
+  "latency" : {"streaming" : 2, "learning" : 60},
+
+  "environmentSettings" : {
+    "environmentName" : "room",
+    "environmentVariables" : [
+      {"name" : "room_occupants", "minValue" : 0, "maxValue" : 30},
+      {"name" : "ext_temp", "minValue" : 0, "maxValue" : 30},
+      {"name" : "heating_level", "minValue" : 0, "maxValue" : 5},
+      {"name" : "room_temp", "minValue" : 0, "maxValue" : 30}
+    ],
+    "environmentAttributes" : [
+      {"name" : "room_material", "minValue" : 0, "maxValue" : 10},
+      {"name" : "room_volume", "minValue" : 0, "maxValue" : 100},
+      {"name" : "heating_capacity", "minValue" : 0, "maxValue" : 10}
+    ],
+    "sampling" : 2
+  },
+
+  "environmentInstances" : [
+    { "id" : 300,
+      "sensorMappings" : { "S12" : "room_occupants", "S23" : "ext_temp", "S34" : "heating_level", "T45" : "room_temp"},
+      "attributeValues" : {"room_material": 5 ,"room_volume": 50,"heating_capacity": 5}
+    }
+  ],
+
+  "predictionProblems" : [
+    {
+      "name" : "room_heating_time_prediction_n_p",
+      "goalVariable" : "room_temp",
+      "explanatoryVariables" : ["room_occupants", "ext_temp","heating_level" ,"room_material", "room_volume", "heating_capacity"],
+      "problemSettings" : {
+        "regressionType" : "polinomial",
+        "normalizeFeatureVectors" : true,
+        "initialWeights" : [],
+        "intercept" : 0
+      },
+      "crossValidationSettings" : {
+        "nBatches" : 3,
+        "maxError" : 5
+      }
+    },
+
+    {
+      "name" : "room_heating_time_prediction_n_l",
+      "goalVariable" : "room_temp",
+      "explanatoryVariables" : ["room_occupants", "ext_temp","heating_level" ,"room_material", "room_volume", "heating_capacity"],
+      "problemSettings" : {
+        "regressionType" : "linear",
+        "normalizeFeatureVectors" : true,
+        "initialWeights" : [],
+        "intercept" : 5
+      },
+      "crossValidationSettings" : {
+        "nBatches" : 3,
+        "maxError" : 5
+      }
+    }
+  ],
+
+  "cassandraPersistence" : {
+    "hostsToPortsMap" : {"10.0.0.31" : 9042, "10.0.0.32" : 9042},
+    "keyspaceName" : "test_keyspace",
+    "tableName" : "test_data",
+    "create" : true
+  },
+
+  "lightningVisualization" : {
+    "host" : "10.0.0.41",
+    "port" : 3000,
+
+    "lastBatchAccuracyVis" : {
+      "lastBatchAccuracy_all": [
+        { "name" : "room_heating_time_prediction_n_p","color" : [0,255,0]},
+        { "name" : "room_heating_time_prediction_n_l","color" : [0,0,255]}
+      ],
+      "lastBatchAccuracy_polinomial": [
+        { "name" : "room_heating_time_prediction_n_p","color" : [0,255,0]}
+      ],
+      "lastBatchAccuracy_linear": [
+        { "name" : "room_heating_time_prediction_n_l","color" : [0,0,255]}
+      ]
+    },
+
+    "lastBatchNTrainingExamplesVis" : {
+      "lastBatchNTrainingExamples_any": [
+        { "name" : "room_heating_time_prediction_n_l","color" : [0,0,255]}
+      ]
+    },
+
+    "environmentStateVis" : {
+      "StateVis":[
+        { "name" : "room_temp","color" : [0,0,255]},
+        { "name" : "ext_temp","color" : [0,255,0]},
+        { "name" : "room_occupants","color" : [255,0,0]},
+        { "name" : "heating_level","color" : [120,120,120]}],
+      "TempVis":[{ "name" : "room_temp","color" : [0,0,255]}]
+    }
+  },
+
+  "ioSettings" : {
+
+    "rmqQueues" :[
+      { "hostsToPortsMap" : {"10.0.0.21" : 5672},
+        "queueName" : "request_queue",
+        "operation" : "queryRequest"
+      },
+      { "hostsToPortsMap" : {"10.0.0.21" : 5672},
+        "queueName" : "response_queue",
+        "operation" : "queryResponse"
+      }
+    ],
+
+    "rmqExchanges" : [
+      { "hostsToPortsMap" : {"10.0.0.21" : 5672},
+        "exchangeName" : "test_direct",
+        "exchangeType":"direct",
+        "routingKeys" : ["key1", "key2"],
+        "operation" : "__"
+      },
+
+      {
+        "hostsToPortsMap": {"10.0.0.21": 5672},
+        "exchangeName": "state_exchange",
+        "exchangeType": "topic",
+        "routingKeys": ["a.b.*"],
+        "operation" : "stateIn"
+      }
+    ],
+
+    "kafkaTopics" : [
+      { "zkHostsToPortsMap" : {"10.0.0.11" : 2181},
+        "brokerHostsToPortsMap" : {"10.0.0.12" : 9092, "10.0.0.13" : 9092},
+        "topics" : ["topic1", "topic2"],
+        "operation" : "__"
+      }
+    ]
+  }
+}

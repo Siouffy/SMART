@@ -1,0 +1,34 @@
+#RMQ, KAFKA, Cassandra and Lightning using single docker-compose file
+
+rmqBrokerLocal:
+  image: rabbitmq:3.5.3
+  ports:
+    - "5672:5672"
+  environment:
+    RABBITMQ_NODENAME: "my-rabbit"
+cassandraLocal:
+  image: rugdsdev/env:cassandra-2.1.5-1-latest
+  ports:
+    - "9042:9042"
+    - "7199:7199"
+  environment:
+    IP: "127.0.0.1"
+    JMX_PASSWORD: "12345"
+kafkaZookeeperLocal:
+  image: wurstmeister/zookeeper
+  ports:
+    - "2181:2181"
+kafkaBrokerLocal:
+  image: wurstmeister/kafka:0.8.2.0
+  ports:
+    - "9092:9092"
+  links:
+    - kafkaZookeeperLocal:zk
+  environment:
+    KAFKA_ADVERTISED_HOST_NAME: "127.0.0.1"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+lightningLocal:
+  image: deardooley/lightning-viz
+  ports:
+    - "3000:3000"
